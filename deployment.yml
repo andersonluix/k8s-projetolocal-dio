@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: andersonlbsilva/projetok8-database:1.0
+        name: mysql
+        #args:
+                #- "--ignore-db-dir=lost+found"
+        #sempre baixa a imagem a cada execucao
+        imagePullPolicy: Always           
+        ports:
+        - containerPort: 3306
+          name: mysql
+
+        volumeMounts:
+        - name: local
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: local
+        persistentVolumeClaim:
+          claimName: localpvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-backend
+  labels:
+    app: app-backend
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: app-backend
+  template:
+    metadata:
+      labels:
+        app: app-backend
+    spec:
+      containers:
+      - image: andersonlbsilva/projetok8-backend:1.0
+        name: app-backend
+        #sempre baixa a imagem a cada execucao
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
